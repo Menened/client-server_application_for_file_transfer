@@ -11,6 +11,13 @@ print("server:",data.decode())
 while True:
     message = (input("Input a command: "))
     if message == "EXIT":
+        client.send(message.encode())
+        data = client.recv(1024)
+        print("server: ", data.decode())
         break
+    else:
+        client.send(message.encode())
+        data = client.recv(1024)
+        print("server: ", data.decode())
 print("client shutdown")
 client.close()
