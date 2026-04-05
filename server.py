@@ -12,18 +12,49 @@ def com_list(con):
         answer = "No files"
     con.send(answer.encode())
 
+def com_download(con, filename):
+    if not filename:
+        con.send("Имя файла не указано".encode())
+        return
+
+    filepath = os.path.join(server_dir, os.path.basename(filename))
+    if not os.path.exists(filepath):
+        con.send("Файл не найден".encode())
+        return
+
+    file_size = os.path.getsize(filepath)
+    con.send(str(file_size).encode())
+    con.send("Y/N?".encode())
+
+    confirm = con.recv(1024).decode()
+    if confirm == "Y":
+        with open(filepath, "rb") as f:
+            con.sendall(f.read())
+        print(f"[DOWNLOAD] {filename} ({file_size} байт)")
+    else: return
+
+
 def client_thread(con):
     print("connection: ", con)
     con.send("Hello, Client!".encode())
     while True:
         data = con.recv(1024)
-        command = data.decode()
+        if not data:
+            break
+
+        message = data.decode().strip()
+        parts = message.split(" ", 1)
+        command = parts[0].upper()
+        argument = parts[1] if len(parts) > 1 else ""
+
         if command == "EXIT":
             con.send("Bye, Client!".encode())
             con.close()
             break
         elif command == "LIST":
             com_list(con)
+        elif command == "DOWNLOAD":
+            com_download(con, argument)
         else:
             con.send("Wrong command".encode())
 
