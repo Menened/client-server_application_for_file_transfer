@@ -15,6 +15,10 @@ while True:
         data = client.recv(1024)
         print("server: ", data.decode())
         break
+    elif message == "LIST":
+        client.send(message.encode())
+        data = client.recv(1024)
+        print("server: ", data.decode())
     else:
         client.send(message.encode())
         data = client.recv(1024)
