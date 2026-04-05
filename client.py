@@ -9,7 +9,6 @@ data = client.recv(1024)
 print("server:",data.decode())
 
 def recv_all(sock, size):
-    """Получить ровно size байт."""
     data = b""
     while len(data) < size:
         chunk = sock.recv(size - len(data))
@@ -17,6 +16,29 @@ def recv_all(sock, size):
             raise ConnectionError("Соединение разорвано")
         data += chunk
     return data
+
+def com_upload(client, filename):
+    if not os.path.exists(filename):
+        print(f"Файл {filename} не найден")
+        return
+    file_size = os.path.getsize(filename)
+    if file_size == 0:
+        print("Файл пустой")
+        return
+    
+    client.send(f"UPLOAD {filename}".encode())
+    client.send(str(file_size).encode())
+    ans = client.recv(1024).decode()
+    if ans != "Y":
+        print("server: ", ans)
+        return
+    with open(filename, "rb") as f:
+        client.sendall(f.read())
+    
+    result = client.recv(1024).decode()
+    print("server: ", result)
+
+
 
 while True:
     message = (input("Input a command: "))
@@ -30,10 +52,12 @@ while True:
         data = client.recv(1024)
         print("server: ", data.decode())
         break
+
     elif command == "LIST":
         client.send(message.encode())
         data = client.recv(1024)
         print("server: ", data.decode())
+
     elif command == "DOWNLOAD":
         client.send(message.encode())
         data = client.recv(1024)
@@ -50,8 +74,8 @@ while True:
                 f.write(file_data)
 
             print(f"Файл {save_path} сохранен ({filesize} байт)")
-    # elif command == "UPLOAD": 
-        
+    elif command == "UPLOAD":
+        com_upload(client, argument)
         
     else:
         client.send(message.encode())
