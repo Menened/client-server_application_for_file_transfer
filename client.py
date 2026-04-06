@@ -84,21 +84,6 @@ while True:
 
     elif command == "DOWNLOAD":
         com_download(client, argument)
-        # client.send(message.encode())
-        # data = client.recv(1024)
-        # filesize = int(data.decode())
-        # print("server: ", data.decode())
-        # data = client.recv(1024)
-        # print("server: ", data.decode())
-        # message = (input())
-        # client.send(message.encode())
-        # if message == "Y":
-        #     file_data = recv_all(client, filesize)
-        #     save_path = os.path.basename(argument)
-        #     with open(save_path, "wb") as f:
-        #         f.write(file_data)
-
-        #     print(f"Файл {save_path} сохранен ({filesize} байт)")
     elif command == "UPLOAD":
         com_upload(client, argument)
         
