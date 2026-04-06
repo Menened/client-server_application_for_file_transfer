@@ -55,32 +55,39 @@ def com_upload(con, filename):
     con.send("Файл загружен".encode())
 
 
-def client_thread(con):
+def client_thread(con, addr):
     print("connection: ", con)
-    con.send("Hello, Client!".encode())
-    while True:
-        data = con.recv(1024)
-        if not data:
-            break
+    try:
+        con.send("Hello, Client!".encode())
+        while True:
+            data = con.recv(1024)
+            if not data:
+                break
 
-        message = data.decode().strip()
-        parts = message.split(" ", 1)
-        command = parts[0].upper()
-        argument = parts[1] if len(parts) > 1 else ""
+            message = data.decode().strip()
+            parts = message.split(" ", 1)
+            command = parts[0].upper()
+            argument = parts[1] if len(parts) > 1 else ""
 
-        if command == "EXIT":
-            con.send("Bye, Client!".encode())
-            con.close()
-            break
-        elif command == "LIST":
-            com_list(con)
-        elif command == "DOWNLOAD":
-            com_download(con, argument)
-        elif command == "UPLOAD":
-            com_upload(con, argument)
-        else:
-            con.send("Wrong command".encode())
-
+            if command == "EXIT":
+                con.send("Bye, Client!".encode())
+                con.close()
+                break
+            elif command == "LIST":
+                com_list(con)
+            elif command == "DOWNLOAD":
+                com_download(con, argument)
+            elif command == "UPLOAD":
+                com_upload(con, argument)
+            else:
+                con.send("Wrong command".encode())
+    except ConnectionError as e:
+        print(f"Обрыв соединения с {addr}: {e}")
+    except Exception as e:
+        print(f"Ошибка с клиентом {addr}: {e}")
+    finally:
+        con.close()
+        print(f"Клиент отключен: {addr}")
 
 server = socket.socket()
 hostname = socket.gethostname()
@@ -90,5 +97,5 @@ server.listen(2)
 
 print("server running...")
 while True:
-    client, _ = server.accept()
-    start_new_thread(client_thread, (client, ))
+    client, addr = server.accept()
+    start_new_thread(client_thread, (client, addr))
